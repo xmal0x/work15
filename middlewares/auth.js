@@ -4,6 +4,8 @@ const cookieParser = require('cookie-parser');
 const { JWT_KEY } = require('../config.js');
 const AuthError = require('../errors/auth-err.js');
 
+const { NODE_ENV, JWT_SECRET } = process.env;
+
 const app = express();
 app.use(cookieParser());
 
@@ -12,16 +14,17 @@ module.exports = (req, res, next) => {
   const cookie = req.cookies.jwt;
 
   if (!cookie) {
-    //return res.status(401).send({ message: 'Необходима авторизация' });
     next(new AuthError('Необходима авторизация'));
   }
 
   let payload;
 
   try {
-    payload = jwt.verify(cookie, JWT_KEY);
+    const key = NODE_ENV === 'production' ? JWT_SECRET : JWT_KEY;
+    console.log(key);
+
+    payload = jwt.verify(cookie, key);
   } catch (error) {
-    //return res.status(401).send({ message: 'Необходима авторизация' });
     next(new AuthError('Необходима авторизация'));
   }
 

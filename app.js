@@ -15,6 +15,8 @@ const { requestLogger, errorLogger } = require('./middlewares/logger.js');
 const { login, createUser } = require('./controllers/users.js');
 
 const { PORT = 3000 } = process.env;
+require('dotenv').config();
+
 
 const app = express();
 app.use(bodyParser.json());
@@ -27,14 +29,19 @@ mongoose.connect('mongodb://localhost:27017/mestodb', {
   useFindAndModify: false,
 });
 
-const badReq = (req, res) => {
+const badReq = () => {
   throw new NotFoundError('Запрашиваемый ресурс не найден');
-  //res.status(404).send({ message: 'Запрашиваемый ресурс не найден' });
 };
 
 app.use(express.static(path.join(__dirname, 'public')));
 
 app.use(requestLogger);
+
+app.get('/crash-test', () => {
+  setTimeout(() => {
+    throw new Error('Сервер сейчас упадёт');
+  }, 0);
+});
 
 app.post('/signin', login);
 app.post('/signup', createUser);

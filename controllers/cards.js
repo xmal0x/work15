@@ -1,21 +1,22 @@
 const Card = require('../models/card');
+const RequestError = require('../errors/request-err.js');
 
-module.exports.getCards = (req, res) => {
+module.exports.getCards = (req, res, next) => {
   Card.find({})
     .then((cards) => res.send({ data: cards }))
-    .catch((err) => res.status(500).send({ message: err }));
+    .catch(next);
 };
 
-module.exports.createCard = (req, res) => {
+module.exports.createCard = (req, res, next) => {
   const { name, link } = req.body;
   const owner = req.user._id;
 
   Card.create({ name, link, owner })
     .then((card) => res.send({ data: card }))
-    .catch((err) => res.status(500).send({ message: err }));
+    .catch(next);
 };
 
-module.exports.deleteCard = (req, res) => {
+module.exports.deleteCard = (req, res, next) => {
   const { cardId } = req.params;
   const owner = req.user._id;
 
@@ -24,10 +25,9 @@ module.exports.deleteCard = (req, res) => {
     .then((card) => {
       if (card.owner.toString() === owner) {
         Card.findByIdAndDelete(cardId)
-          .then(() => res.status(200).send({ data: cardId }))
-          .catch((err) => res.status(500).send({ message: err.message }));
+          .then(() => res.status(200).send({ data: cardId }));
       } else {
-        return res.status(403).send({ message: 'У вас нет прав для удаления данной карточки' });
+        throw new RequestError('У вас нет прав для удаления данной карточки');
       }
-    }).catch((err) => res.status(404).send({ message: err }));
+    }).catch(next);
 };

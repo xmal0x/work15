@@ -15,20 +15,26 @@ module.exports.getUsers = (req, res, next) => {
 
 module.exports.createUser = (req, res, next) => {
   const {
-    email, password, name, about, avatar,
+    name, about, avatar, email, password,
   } = req.body;
   User.findOne({ email })
     .then((newUser) => {
       if (newUser) {
         throw new RequestError('Email уже существует');
       }
-    }).catch(next);
-  bcrypt.hash(password, 10).then((hash) => {
-    User.create({
-      name, about, avatar, email, password: hash,
+      bcrypt.hash(password, 10)
+        .then((hash) => User.create({
+          name,
+          about,
+          avatar,
+          email,
+          password: hash,
+        }))
+        .then((user) => {
+          res.status(201).send(user.omitPrivate());
+        });
     })
-      .then((user) => res.send({ data: user.omitPrivate() }));
-  }).catch(next);
+    .catch(next);
 };
 
 module.exports.getUserById = (req, res, next) => {

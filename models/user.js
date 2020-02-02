@@ -1,5 +1,6 @@
 const mongoose = require('mongoose');
 const bcrypt = require('bcryptjs');
+const uniqueValidator = require('mongoose-unique-validator');
 
 const validateLinkTemplate = /^(https|http)?:\/\/(www.)?[^-_.\s](\d{1,3}.\d{1,3}.\d{1,3}.\d{1,3})?(:\d+)?(.+[#a-zA-Z/:0-9]{1,})?\.(.+[#a-zA-Z/:0-9]{1,})?$/i;
 const validateEmailTemplate = /^([\w-\\.]+@([\w-]+\.)+[\w-]{2,4})?$/;
@@ -56,5 +57,7 @@ userSchema.methods.omitPrivate = function omitPrivate() {
   delete obj.password;
   return obj;
 };
+
+userSchema.plugin(uniqueValidator);
 
 module.exports = mongoose.model('user', userSchema);
